@@ -8,7 +8,8 @@ services:
       - "80:80"
     devices:
     # use `python -m serial.tools.miniterm` to see what the name is of the printer
-      - /dev/ttyACM0:/dev/serial/by-id/usb-marlinfw.org_Marlin_USB_Device_0600800FAF291C895AA214DEF50020C7-if00
+ #     - /dev/ttyACM0:/dev/serial/by-id/usb-marlinfw.org_Marlin_USB_Device_0600800FAF291C895AA214DEF50020C7-if00
+      - /dev/serial/by-id/usb-marlinfw.org_Marlin_USB_Device_0600800FAF291C895AA214DEF50020C7-if00:/dev/ttyACM0
       - /dev/video0:/dev/video0
     volumes:
      - octoprint:/octoprint
@@ -17,6 +18,21 @@ services:
     environment:
       - ENABLE_MJPG_STREAMER=true
   
+  octoprint2:
+    image: octoprint/octoprint
+    restart: unless-stopped
+    ports:
+      - "81:80"
+    devices:
+    # use `python -m serial.tools.miniterm` to see what the name is of the printer
+      - /dev/serial/by-id/usb-1a86_USB2.0-Serial-if00-port0:/dev/ttyACM0
+    #  - /dev/video0:/dev/video0
+    volumes:
+     - octoprint2:/octoprint
+    # uncomment the lines below to ensure camera streaming is enabled when
+    # you add a video device
+    environment:
+      - ENABLE_MJPG_STREAMER=false
   ####
   # uncomment if you wish to edit the configuration files of octoprint
   # refer to docs on configuration editing for more information
@@ -38,3 +54,4 @@ services:
 
 volumes:
   octoprint:
+  octoprint2:
