@@ -1,0 +1,58 @@
+Readme for creating OctoPrint docker containers that will
+automatically start when a printer is connected to the system.
+
+This is designed for the RaspberryPI 4b running the 64bit Bullseye OS
+
+install docker & docker-compose
+create first octoprint container and test connection to printer
+create service and enable
+create UDEV rules to start service
+
+Docker & Docker-Compose
+download and run the docker install script.
+::curl -fsSL https://get.docker.com -o get-docker.sh
+::sudo bash get-docker.sh
+add current user to the docker group to enable running without root
+::sudo usermod -aG docker $(whoami)
+Logout and back in to have changes take effect
+
+install docker compose:
+First install python PIP
+::sudo apt install python3-pip -y
+then install docker compose
+:: sudo pip3 install docker-compose
+
+download octoprint container
+directions from: https://hub.docker.com/r/octoprint/octoprint
+::docker pull octoprint/octoprint:latest
+
+Edit the docker-compose.yml file and update for printer device settings and cameras
+test launch docker-compose
+default yml file has 2 octoprint services each with their own profile (octo1, octo2)
+not using '-d' with these as we want to see the output
+:: docker-compose --profile octo1 up
+make sure you can log into the octoprint service at the url
+kill the session
+::<ctrl>-c
+Start 2nd instance to test if needed and repeat
+:: docker-compose --profile octo2 up
+
+with the current RasPI installs the 3d printers go to /dev/serial/by-id/ for easy use.  
+We also want to create a udev rule  to auto start/stop the octoprint service when the printer comes online
+get the device idVender and idProduct values for creating the rules use udevadm
+::udevadmn info -a /dev/serial/by-id/device_identifier 
+or
+use lsusb to get bus and device id's
+::lsusb
+then use lsusb with the -vs option and grep for the settings
+::lsusb -vs 001:004 |grep "idVendor\|idProduct"
+create the udev rule file to start/stop the service
+see file in the udev directory
+
+activate new rules
+::sudo udevadm control --reload-rules
+::sudo systemctl restart systemd-udevd.service
+
+once done turn on or restart a printer and check that the octoprint service starts up.
+
+
