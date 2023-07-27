@@ -168,7 +168,8 @@ Once done turn on or restart a printer and check that the octoprint service star
 sudo systemctl status octo1.service
 ```
 
-##Final checks
+## Final checks
+
 Once everything is done and services are reloaded and restarted you can run the final checks.  Plugin or turn on your printer to the PI and run `sudo systemctl status octo1` to verify that the docker has started.
 Then check our the url on port 8080 (or whatever port you specified in the yml file).
 Finally turn off the printer or remove the USB cable and the docker container and service should terminate on their own.
