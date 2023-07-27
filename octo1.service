@@ -1,7 +1,9 @@
 [Unit]
 Description=OctoPrint Compose Service
-Requires=docker.service
-After=docker.service
+Requires=docker.service dev-ttyAM8.device
+After=docker.service dev-ttyAM8.device
+StopWhenUnneeded=true
+BindsTo=dev-ttyAM8.device
 
 [Service]
 User=ryan

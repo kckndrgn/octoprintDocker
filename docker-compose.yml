@@ -5,7 +5,7 @@ services:
     image: octoprint/octoprint
     restart: unless-stopped
     ports:
-      - "80:80"
+      - "8080:80"
     devices:
     # use `python -m serial.tools.miniterm` to see what the name is of the printer
       - /dev/ttyAM8:/dev/ttyACM0
@@ -23,7 +23,7 @@ services:
     image: octoprint/octoprint
     restart: unless-stopped
     ports:
-      - "81:80"
+      - "8081:80"
     devices:
     # use `python -m serial.tools.miniterm` to see what the name is of the printer
       - /dev/serial/by-id/usb-1a86_USB2.0-Serial-if00-port0:/dev/ttyACM0
