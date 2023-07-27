@@ -24,7 +24,7 @@ Bus 001 Device 002: ID 2109:3431 VIA Labs, Inc. Hub
 Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
 </pre>
 
-Then use lsusb using the -vs option and the 'Bus' and 'Device' id of the USB device and grep for the settings
+Then use 'lsusb' with the '-vs' option and use the 'Bus' and 'Device' id of the USB device and grep for the settings
 ```
  $ lsusb -vs 001:011 |grep "idVendor\|idProduct"
 Couldn't open device, some information will be missing
@@ -104,11 +104,33 @@ Then kill this container once you can connect and verify the printer is working.
 
 ## Create the systemctl service for octoprint
 
-Copy the 'octo1.service' and 'octo2.service' files (if only using one printer, copy just octo1) to /etc/systemd/system/.  These are the files that will start the OctoPrint service.
+Copy the 'octo1.service' and 'octo2.service' files (if only using one printer, copy just octo1) to /etc/systemd/system/.  
+These are the files that will start the OctoPrint service.  You will need to modify the user and possibly the path to the Docker files in these files.
 To enable the new service:
 ```
 sudo systemctl enable octo1
 ```
+Check the status of the service to make sure it is found:
+```
+sudo systemctl status octo1
+● octo1.service - OctoPrint Compose Service
+     Loaded: loaded (/etc/systemd/system/octo1.service; enabled; vendor preset: enabled)
+     Active: inactive (dead)
+
+```
+
+Now try to start the service:
+```
+sudo systemctl start octo1
+```
+If there are no errors output the service should be running and you can check by re-running the status command above.
+
+Stop the service with:
+```
+sudo systemctl stop octo1
+```
+
+You can either start the service manually, or have the service start up anytime the printer is connected to the RaspberryPI and turned on by doing the next steps.
 
 ## Create UDEV Rule to start service
 
