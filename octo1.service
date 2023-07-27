@@ -4,11 +4,11 @@ Requires=docker.service
 After=docker.service
 
 [Service]
-User=pi
-Group=pi
+User=ryan
+Group=docker
 Type=oneshot
 RemainAfterExit=yes
-WorkingDirectory=/home/pi/OctoPrint
+WorkingDirectory=/home/ryan/OctoPrint/octoprintDocker
 ExecStart=/usr/local/bin/docker-compose --profile octo1 up -d
 ExecStop=/usr/local/bin/docker-compose --profile octo1 down
 TimeoutStartSec=0

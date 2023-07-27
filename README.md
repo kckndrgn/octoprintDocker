@@ -4,12 +4,49 @@ Create OctoPrint docker containers that will automatically start/stop when a pri
 
 This is designed for the RaspberryPI 4b running the 64bit Bullseye OS
 General steps include:
+-create UDEV rules to give the printer a named symbolic link
 -install docker & docker-compose
 -create first octoprint container and test connection to printer
 -create service and enable
 -create UDEV rules to start service
 -restart UDEV service and test
 
+## Create symbolic link in /dev for printer(s)
+Get the device idVender and idProduct values for creating the rules use udevadm
+
+Use 'lusb' command and grep to get the information.
+<pre>
+$ lsusb
+Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+Bus 001 Device 005: ID 046d:0825 Logitech, Inc. Webcam C270
+<b>Bus 001 Device 011: ID 1d50:6029 OpenMoko, Inc. Marlin 2.0 (Serial)</b>
+Bus 001 Device 002: ID 2109:3431 VIA Labs, Inc. Hub
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+</pre>
+
+Then use lsusb using the -vs option and the 'Bus' and 'Device' id of the USB device and grep for the settings
+```
+ $ lsusb -vs 001:011 |grep "idVendor\|idProduct"
+Couldn't open device, some information will be missing
+  idVendor           0x1d50 OpenMoko, Inc.
+  idProduct          0x6029 Marlin 2.0 (Serial)
+```
+You can ignore the part about not being able to open the device and the 0x in front of the ids indicates a hex code.  
+You will leave off the 0x part but use the 4 digit code after it in the udev rule.
+Copy the file udev/99-setPrinter.rules to /etc/udev/rules.d/ and update it so that the 'idVendor' and 'idProduct' numbers match your printer.  Also update the SYMLINK to the name you want.
+```
+SUBSYSTEM=="tty",ATTRS{idVendor}=="1d50",ATTRS{idProduct}=="6029",SYMLINK+="ttyAM8"
+```
+Activate the new rules
+```
+sudo udevadm control --reload-rules
+sudo systemctl restart systemd-udevd.service
+```
+Turn on the printer or unplug/plugin the USB and verify you can see the printer in /dev/ with the symbolink you specified.
+```
+ls -l ttyAM*
+lrwxrwxrwx 1 root root 7 Jul 26 11:19 ttyAM8 -> ttyACM0
+```
 ## Docker & Docker-Compose installation
 ### Docker
 Download and run the docker install script.
@@ -61,35 +98,26 @@ You may now try to start the 2nd instance to test if needed and repeat.  The sec
 docker-compose --profile octo2 up
 ```
 Then kill this container once you can connect and verify the printer is working.
+
+
+
+
 ## Create the systemctl service for octoprint
 
-## Create UDEV Rules
-We also want to create a udev rule  to auto start/stop the octoprint service when the printer comes online.
-Get the device idVender and idProduct values for creating the rules use udevadm.
+Copy the 'octo1.service' and 'octo2.service' files (if only using one printer, copy just octo1) to /etc/systemd/system/.  These are the files that will start the OctoPrint service.
+To enable the new service:
 ```
-udevadmn info -a /dev/serial/by-id/device_identifier 
+sudo systemctl enable octo1
 ```
-Or you can use 'lusb' command and grep to get the information.
-<pre>
-$ lsusb
-Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
-Bus 001 Device 005: ID 046d:0825 Logitech, Inc. Webcam C270
-<b>Bus 001 Device 011: ID 1d50:6029 OpenMoko, Inc. Marlin 2.0 (Serial)</b>
-Bus 001 Device 002: ID 2109:3431 VIA Labs, Inc. Hub
-Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
-</pre>
-Then use lsusb using the -vs option and the 'Bus' and 'Device' id of the USB device and grep for the settings
-```
- $ lsusb -vs 001:011 |grep "idVendor\|idProduct"
-Couldn't open device, some information will be missing
-  idVendor           0x1d50 OpenMoko, Inc.
-  idProduct          0x6029 Marlin 2.0 (Serial)
-```
-You can ignore the part about not being able to open the device and the 0x in front of the ids indicates a hex code.  You will leave off the 0x part but use the 4 digit code after it in the udev rule.
+
+## Create UDEV Rule to start service
+
+We also want to create a udev rule to auto start/stop the octoprint service when the printer comes online.
+
 
 You can see an example file in the udev directory of this repository, copy to /etc/udev/rules.d/ and edit, changing your device id's appropriatly.
 
-activate new rules
+Activate the new rules
 ```
 sudo udevadm control --reload-rules
 sudo systemctl restart systemd-udevd.service
