@@ -6,12 +6,12 @@ Create OctoPrint docker containers that will automatically start/stop when a pri
 
 This is designed for the RaspberryPI 4b running the 64bit Bullseye OS
 General steps include:
--create UDEV rules to give the printer a named symbolic link
--install docker & docker-compose
--create first octoprint container and test connection to printer
--create service and enable
--create UDEV rules to start service
--restart UDEV service and test
+- create UDEV rules to give the printer a named symbolic link
+- install docker & docker-compose
+- create first octoprint container and test connection to printer
+- create service and enable
+- create UDEV rules to start service
+- restart UDEV service and test
 
 ## Create symbolic link in /dev for printer(s)
 12/19/23 - update, you can use the /dev/serial/by-id/ to get a system specific id and you will not
