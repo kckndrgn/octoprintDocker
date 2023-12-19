@@ -33,7 +33,11 @@ Couldn't open device, some information will be missing
 ```
 You can ignore the part about not being able to open the device and the 0x in front of the ids indicates a hex code.  
 You will leave off the 0x part but use the 4 digit code after it in the udev rule.
-Copy the file udev/99-setPrinter.rules to /etc/udev/rules.d/ and update it so that the 'idVendor' and 'idProduct' numbers match your printer.  Also update the SYMLINK to the name you want.
+Copy the file udev/99-setPrinter.rules to /etc/udev/rules.d/ and update it so that the 'idVendor' and 'idProduct' numbers match your printer(s).  Also update the SYMLINK to the name you want.
+You will need to do the same, or similar if you want the camera's to be added to the docker container.  You may need to run the following command to get the correct info for the camera(s):
+```
+udevadm info --attribute-walk /dev/bus/usb/003/005
+```
 ```
 SUBSYSTEM=="tty",ATTRS{idVendor}=="1d50",ATTRS{idProduct}=="6029",SYMLINK+="ttyAM8"
 ```

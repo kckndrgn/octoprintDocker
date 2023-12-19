@@ -1,60 +1,61 @@
-version: '2.4'
+#version: '2.4'
 
 services:
   octoprint:
     image: octoprint/octoprint
     restart: unless-stopped
     ports:
-      - "8080:80"
+      - 3000:80
     devices:
     # use `python -m serial.tools.miniterm` to see what the name is of the printer
       - /dev/ttyAM8:/dev/ttyACM0
-      - /dev/video0:/dev/video0
+      - /dev/v4l/by-id/usb-046d_0825_A3248F60-video-index0:/dev/video0
     volumes:
-     - octoprint:/octoprint
+     - ./octoprint1:/octoprint
     # uncomment the lines below to ensure camera streaming is enabled when
     # you add a video device
     environment:
       - ENABLE_MJPG_STREAMER=true
-    profiles:
-      - octo1
+    container_name: octo1
   
   octoprint2:
     image: octoprint/octoprint
     restart: unless-stopped
     ports:
-      - "8081:80"
+#      - "8081:80"
+#      - "4080:80"
+#      - "4000:5000"
+      - 3001:80
     devices:
+      - /dev/ttyBLV:/dev/ttyACM0
+      - /dev/v4l/by-id/usb-046d_0825_98779F10-video-index0:/dev/video0
     # use `python -m serial.tools.miniterm` to see what the name is of the printer
-      - /dev/serial/by-id/usb-1a86_USB2.0-Serial-if00-port0:/dev/ttyACM0
-    #  - /dev/video0:/dev/video0
     volumes:
-     - octoprint2:/octoprint
-    # uncomment the lines below to ensure camera streaming is enabled when
-    # you add a video device
+     - ./octoprint2:/octoprint
     environment:
-      - ENABLE_MJPG_STREAMER=false
-    profiles:
-      - octo2
+      - ENABLE_MJPG_STREAMER=true
+      - MJPG_STREAMER_INPUT=-n -f 30 -r 640x480
+    container_name: octo2
   ####
   # uncomment if you wish to edit the configuration files of octoprint
   # refer to docs on configuration editing for more information
   ####
 
-  #config-editor:
-  #  image: linuxserver/code-server
-  #  ports:
-  #    - 8443:8443
-  #  depends_on:
-  #    - octoprint
-  #  restart: unless-stopped
-  #  environment:
-  #    - PUID=0
-  #    - GUID=0
-  #    - TZ=America/Chicago
-  #  volumes:
-  #    - octoprint:/octoprint
+
+#  config-editor:
+#    image: linuxserver/code-server
+#    ports:
+#      - 8443:8443
+#    depends_on:
+#      - octoprint
+#    restart: unless-stopped
+#    environment:
+#      - PUID=0
+#      - PGID=0
+#      - TZ=America/Chicago
+#    volumes:
+#      - ./octoprint1:/octoprint
 
 volumes:
-  octoprint:
+  octoprint1:
   octoprint2:
