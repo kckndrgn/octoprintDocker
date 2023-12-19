@@ -1,3 +1,5 @@
+This is how I have setup my octoprint services to run multiple printers.  Use at your own risk!
+
 # RasPi OctoPrint in automated docker containers
 
 Create OctoPrint docker containers that will automatically start/stop when a printer is connected/disconnected to the system
