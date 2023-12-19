@@ -1,4 +1,5 @@
 SUBSYSTEM=="tty",ATTRS{idVendor}=="1d50",ATTRS{idProduct}=="6029",SYMLINK+="ttyAM8"
 SUBSYSTEM=="tty",ATTRS{idVendor}=="1a86",ATTRS{idProduct}=="7523",SYMLINK+="ttyBLV"
-SUBSYSTEM=="usb",ATTR{idVendor}=="046d",ATTR{idProduct}=="0825",SYMLINK+="AM8Video"
-SUBSYSTEM=="usb",ATTR{idVendor}=="1d6c",ATTR{idProduct=}="0103",SYMLINK+="BLVVideo"
+#SUBSYSTEM=="usb",ATTR{idVendor}=="046d",ATTR{idProduct}=="0825",ATTR{serial}=="98779F10",SYMLINK+="BLVVideo"
+#SUBSYSTEM=="usb",ATTR{idVendor}=="046d",ATTR{idProduct}=="0825",ATTR{serial}=="A3248F60",SYMLINK+="AM8Vedio
+

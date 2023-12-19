@@ -22,9 +22,6 @@ services:
     image: octoprint/octoprint
     restart: unless-stopped
     ports:
-#      - "8081:80"
-#      - "4080:80"
-#      - "4000:5000"
       - 3001:80
     devices:
       - /dev/ttyBLV:/dev/ttyACM0

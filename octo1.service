@@ -11,8 +11,8 @@ Group=docker
 Type=oneshot
 RemainAfterExit=yes
 WorkingDirectory=/home/ryan/OctoPrint/octoprintDocker
-ExecStart=/usr/local/bin/docker-compose --profile octo1 up -d
-ExecStop=/usr/local/bin/docker-compose --profile octo1 down
+ExecStart=/usr/local/bin/docker-compose up -d octoprint
+ExecStop=/usr/local/bin/docker-compose stop octoprint 
 TimeoutStartSec=0
 
 [Install]

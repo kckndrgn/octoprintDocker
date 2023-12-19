@@ -12,6 +12,10 @@ General steps include:
 -restart UDEV service and test
 
 ## Create symbolic link in /dev for printer(s)
+12/19/23 - update, you can use the /dev/serial/by-id/ to get a system specific id and you will not
+have to rely on setting the udev rules specifically.  I have used this method when setting up the 
+USB cameras below, you can use the same method for the printers using the correct /dev/ path.
+
 Get the device idVender and idProduct values for creating the rules use udevadm
 
 Use `lusb` command and grep to get the information.
@@ -51,6 +55,18 @@ Turn on the printer or unplug/plugin the USB and verify you can see the printer 
 ls -l ttyAM*
 lrwxrwxrwx 1 root root 7 Jul 26 11:19 ttyAM8 -> ttyACM0
 ```
+Updated method using the 'by-id' path in /dev.  Before plugging in the camera(s) look at /dev/v4l/by-id and not any entries in that directory.
+These will be existing cameras, if there are any.
+Plug in the USB cameras, one at a time if using multiple, and note the entries in /dev/v4l/by-id.
+This is what mine looks like after plugging in both cameras, which are both Logitech C270 cameras
+```
+ls /dev/v4l/by-id/
+usb-046d_0825_98779F10-video-index0  usb-046d_0825_A3248F60-video-index0
+usb-046d_0825_98779F10-video-index1  usb-046d_0825_A3248F60-video-index1
+
+```
+I used the 'index0' entry for each to update the 'docker-compose.yml' file so that each camera is associated with the correct printer.
+
 ## Docker & Docker-Compose installation
 ### Docker
 Download and run the docker install script.
@@ -80,12 +96,21 @@ Now you can download octoprint container from the docker hub, https://hub.docker
 docker pull octoprint/octoprint:latest
 ```
 
-Edit the docker-compose.yml file and update for printer device settings and cameras test launch docker-compose.  Items to note are the paths to the printer and camera in the 'devices' section.
-For the printer you can use your alias you configured earlier and usually the camera will be /dev/video0 for the first camera.  You may comment out or delete the line if you do not have a camera setup.
-
-The default yaml file has 2 octoprint services with their own profile (octo1, octo2) flag.  Using the '--profile' flag on the command line will let us choose which one or both services will start.  When testing the docker-compose process, do not use '-d' with these as we want to see the output so we can correct any errors.
+Edit the docker-compose.yml file and update for printer device settings and cameras test launch docker-compose.
+Items to note are the paths to the printer and camera in the 'devices' section.
+For the printer you can use your alias you configured earlier and update the camera device path. 
+You may comment out or delete the line if you do not have a camera setup.  Additionally, make sure the line "ENABLE_MJPG_STREAMER" is set to true in the docker-compose.yml.
+Here is the 'device' section for one of my printers:
 ```
-docker-compose --profile octo1 up
+    devices:
+      - /dev/ttyBLV:/dev/ttyACM0
+      - /dev/v4l/by-id/usb-046d_0825_98779F10-video-index0:/dev/video0
+```
+Update the 'ports' in the yaml file to reflect the ports you want to use on the host system for accessing the docker containers.  I use 3000 and 3001 you can choose your own ports by changing it in the yaml file.
+
+The default yaml file has 2 octoprint services  When testing the docker-compose process, do not use '-d' with these as we want to see the output so we can correct any errors.
+```
+docker-compose up octoprint
 ```
 Make sure you can log into the octoprint service at the url, which should be port 8080 of the IP address of the Pi.  If you can log in you can setup the OctoPrint service, all settings will be retained.
 kill the session by stopping the docker-compose process
@@ -93,9 +118,9 @@ kill the session by stopping the docker-compose process
 <ctrl>-c
 ```
 You may now try to start the 2nd instance to test if needed and repeat.  The second container needs it's own external port if you want to be able to run both containers at the same time.  
-My default is set to 8080 for the first container and 8081 for the second. 
+My default is set to 3000 for the first container and 3001 for the second. 
 ``` 
-docker-compose --profile octo2 up
+docker-compose up octoprint2
 ```
 Then kill this container once you can connect and verify the printer is working.
 
@@ -110,10 +135,10 @@ See the example below
 ```
 [Unit]
 Description=OctoPrint Compose Service
-**Requires=docker.service dev-ttyAM8.device**
-**After=docker.service dev-ttyAM8.device**
+Requires=docker.service dev-ttyAM8.device
+After=docker.service dev-ttyAM8.device
 StopWhenUnneeded=true
-**BindsTo=dev-ttyAM8.device**
+BindsTo=dev-ttyAM8.device
 
 [Service]
 User=ryan
@@ -121,12 +146,13 @@ Group=docker
 Type=oneshot
 RemainAfterExit=yes
 WorkingDirectory=/home/ryan/OctoPrint/octoprintDocker
-ExecStart=/usr/local/bin/docker-compose --profile octo1 up -d
-ExecStop=/usr/local/bin/docker-compose --profile octo1 down
+ExecStart=/usr/local/bin/docker-compose up -d octoprint
+ExecStop=/usr/local/bin/docker-compose stop octoprint
 TimeoutStartSec=0
 
 [Install]
 WantedBy=multi-user.target
+
 ```
 To enable the new service:
 ```
@@ -141,7 +167,7 @@ sudo systemctl status octo1
 
 ```
 
-Now try to start the service:
+Now try to start the service (make sure the printer and camera (if used) are plugged in and on):
 ```
 sudo systemctl start octo1
 ```
@@ -175,5 +201,5 @@ sudo systemctl status octo1.service
 ## Final checks
 
 Once everything is done and services are reloaded and restarted you can run the final checks.  Plugin or turn on your printer to the PI and run `sudo systemctl status octo1` to verify that the docker has started.
-Then check our the url on port 8080 (or whatever port you specified in the yml file).
+Then check our the url on port 3000 (or whatever port you specified in the yml file).
 Finally turn off the printer or remove the USB cable and the docker container and service should terminate on their own.
